@@ -134,7 +134,7 @@ bay, with total number of relations equal to best_z.
 
 //#define M_DEBUG	/*!< Comment this to remove debug */
 #define W_OUT
-// #define W_PATH
+ #define W_PATH
 using namespace std;
 
 /************************ Global Constants *******************/
@@ -476,11 +476,13 @@ void define_stochastic_corridor(std::vector< std::vector <int> > state, int row,
 
     // compute stack score
     double den = _ZERO;
+    int nAvailable = m;
     for (int i = 0; i < m; i++)
     {
         if (state[i].size() >= h || i == row)
         {
             score_stack[i] = _ZERO;
+            nAvailable--;
             continue;
         }
         if (min_in_stack[i] == _MAXRANDOM)
@@ -524,8 +526,12 @@ void define_stochastic_corridor(std::vector< std::vector <int> > state, int row,
 #endif
 
     // b. randomly select stacks
+    // updated 26.04.17: if the corridor requires to select more than the
+    // maximum number of available columns, we reduce the corridor.
     int n_selected = 0;
-    while (n_selected < delta)
+    nAvailable = min(delta, nAvailable);
+    while (n_selected < nAvailable)
+    // while (n_selected < delta)
     {
         // scores must always be normalized to 1
         int rI = rand();
@@ -534,7 +540,7 @@ void define_stochastic_corridor(std::vector< std::vector <int> > state, int row,
         while (is_in_corridor[k] == true || k == row && k < m)
             k++;
         double cum = score_stack[k];
-        while (cum < r && k < m || k == row)
+        while (cum < r && k < m || k == row || state[k].size() >= h)
         {
             k++;
             if (is_in_corridor[k] == false)

@@ -1,0 +1,88 @@
+---
+title: "Data Analysis for BRP with Corridor Method"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(dplyr)
+```
+
+This file allows to summarize the results of the CM algorithm for BRP. The 
+algorithm is the one presented in the OR Spectrum paper (2008), with a fix carried
+out in April 2017. I realized that the maximum height limit was not respected by
+the corridor selection mechanism. Therefore, I was obtaining solutions for which
+the maximum height (typically, H+2) was violated. That "bug" has been fixeed in 
+the current version of the code (which is also the one on github). Upon request
+from SV, I re-run all the instances of the paper and collected the average values
+per class. In addition, the raw data (i.e., instance-by-instance result) has also
+been collected. If we want to get the evolution of the bay for each instance,
+a flag (#define W_PATH) should be activated in the code. This will allow to print 
+on screen the path followed to reach the best solution found.
+
+```{r}
+inp = read.table("result17-Small.dat")
+#inp = read.table("result17-All.dat")
+#inp = read.table("result17-Large.dat")
+# this is to filter out non-solutions
+inp = inp %>% 
+  filter(V7 != -999)
+str(inp)
+inp = rename(inp, moves = V5)
+inp = rename(inp, corridor = V6)
+inp = rename(inp, time = V7)
+```
+Add columns with H (height), W (width), and Instance Number. NOTE: use 4,3,2
+for small instances, while 3,2,1 for larger instances. This is due to the different
+format of the filename:
+```{r}
+n = dim(inp)[1]
+a = vector()
+for (i in seq(1:n)) {a[i] = as.numeric(unlist(regmatches(inp$V1[i],gregexpr("[[:digit:]]+",inp$V1[i]))))[3]}
+inp = inp %>%
+  mutate(InstNr = a)
+for (i in seq(1:n)) {a[i] = as.numeric(unlist(regmatches(inp$V1[i],gregexpr("[[:digit:]]+",inp$V1[i]))))[2]}
+inp = inp %>%
+  mutate(W = a)
+for (i in seq(1:n)) {a[i] = as.numeric(unlist(regmatches(inp$V1[i],gregexpr("[[:digit:]]+",inp$V1[i]))))[1]}
+inp = inp %>%
+  mutate(H = a)
+```
+
+Analysis per instance class. Creation of raw data files for each instance class:
+```{r}
+Ht = 4
+#Wt = 10
+for (Wt in c(4,5,6,7))
+#for (Ht in c(6,10)){
+#for (Wt in c(6,10))
+{
+  
+summaryClass = inp %>%
+  filter(H==Ht, W==Wt) %>%
+  group_by(InstNr) %>%
+  summarise(n(), min(moves), max(moves))
+filename = paste(c("raw-",Ht,"-",Wt,".csv"),collapse = "")
+write.csv(summaryClass,filename)
+} 
+#}
+```
+
+Finally, global analysis. We get the average number of relations for each instance
+class. Note: CHANGE name files, to avoid overwriting results for different classes:
+```{r}
+summaryAll = inp %>%
+  group_by(H,W,InstNr) %>%
+  summarise(moves = min(moves))
+write.csv(summaryAll,"rawAll.csv")
+
+
+avgTable = summaryAll %>%
+  group_by(H,W) %>%
+  summarise(n(), mean(moves))
+write.table(avgTable, "avgTable.txt", sep="\t")
+```
+
+
