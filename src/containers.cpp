@@ -134,7 +134,7 @@ bay, with total number of relations equal to best_z.
 
 //#define M_DEBUG	/*!< Comment this to remove debug */
 #define W_OUT
- #define W_PATH
+// #define W_PATH   // activate this to get the SOLUTION on screen (bay)
 using namespace std;
 
 /************************ Global Constants *******************/
@@ -217,6 +217,12 @@ int main(int argc, char *argv[])
         // print_bay(bay);
     }
 
+    fResult << setw(12) << _FILENAME << setw(4) << m << setw(4) << n << setw(4) 
+        << nels << setw(12) << best_z << setw(10)
+        << delta << setw(15) << setprecision(3) 
+        << best_time << endl;
+    fResult.close();
+    
 #ifdef W_PATH
     cout << "Initial configuration and BEST PATH is :: " << endl;
     cout << "==================================================" << endl;  
@@ -229,11 +235,6 @@ int main(int argc, char *argv[])
     cout <<"Algorithm terminates because time limit was reached. Best solution found requires " << best_z << " relocations." << endl;
 #endif
     cout << "CM : Solution found with " << best_z << " moves." << endl;	
-    fResult << setw(12) << _FILENAME << setw(4) << m << setw(4) << n << setw(4) 
-        << nels << setw(12) << best_z << setw(8) 
-        << delta << setw(6) << setprecision(3) 
-        << best_time << endl;
-    fResult.close();
 
     return 0;
 }

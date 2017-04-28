@@ -1,0 +1,68 @@
+Author   : Marco Caserta
+Email    : marco dot caserta at ie dot edu
+Revision : April 28, 2017
+
+
+This part of the project is associated to the review carried out in April 2017.
+Due to some tests, SV and Silvia pointed out a potential mistake in the CM
+algorithm. The problem was that the maximum height (H+2) was not always
+respected. Actually, the corridor method, in selecting a stack, was not
+checking whether the maximum height of that stake was respected and, therefore,
+it could end up piling up elements above the H+2 height limit. 
+
+I believe that, in the original OR Spectrum paper, this constraint was not 
+enforced. I think that, while this is common practice now, it became an accepted 
+practice for this instances from the EJOR paper onward. In any case, the code
+has been fixed in April 2017 (a comment has been added within the code, to
+indicate the change), and the whole set of experiments have been re-ran.
+
+I also observed another issue related to the H+2 limit and the corridor. Assume
+we have a corridor of 5 stacks in the current bay. However, only 3 of the
+stacks have a current occupation of less than H+2. In other words, while we
+would like to identify 5 candidate stacks, only 3 of them have not reached yet
+the maximum height. In this situation, we cannot build a corridor of width 5.
+We will have to do it with a corridor of size 3. Thus, the actual corridor is
+now built as the minimum between the required corridor size and the number of
+still usable stacks (stacks that have not reached yet the maximum height).
+
+
+Analysis of the Results
+-----------------------
+
+The file "resultsAnalysis.Rmd" has been used to analyze the raw data, clean up
+the files, and compute the average values. The output is the table
+"avgTable.txt", which provides the average number of moves for each instance
+class (averaged over 40 instances per class.)
+
+
+Results
+-------
+
+- The directory "results17" contains the summary of the results, i.e., the
+  recomputation of the tables of the OR Spectrum paper. The file avgTable.txt
+  provides the average number of moves for each instance class. In addition, we
+  verify that, for each instance class, 40 problems have been solved.
+- Within that folder, there is another folder, called "rawData", which contains 
+  the detailed results for each instance within each class. 
+- A few output files have also been created, i.e., output5 and outputLarge,
+  with the output of the algorithm. I used these files to check that the
+  solutions found by CM do not exceed the limit H+2. I did not really check all
+  the instances but, from a random inspection, it seems the limit is now
+  respected. 
+
+
+Note: 
+-----
+
+Differences between the results of the OR Spectrum paper and the ones
+obtained here can be due to a number of reasons, e.g.:
+i. in the OR Spectrum version, some instances were not actually solved and,
+therefore, the average per class was computed over less than 40 instances. This
+was due to memory errors.
+ii. the H+2 limit. Enforcing this limit changes the behavior of the corridor
+method and, therefore, forces a different exploration mechanism.
+iii. the hardware. Since the method is heuristic in nature, using a faster
+hardware allows to perform a deeper exploration of the solution space (it would
+be equivalent to increasing the time limit on the old hardware.) While this is
+irrelevant for small instances (the CM finds the optimal solution for all the
+instances of classes 3 and 4), it might be an issue for larger instances.
